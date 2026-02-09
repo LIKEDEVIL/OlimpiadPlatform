@@ -1,0 +1,18 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div style="text-align: center; margin-top: 100px;">
+    <div class="spinner" style="width: 60px; height: 60px; border: 5px solid #f3f3f3; border-top: 5px solid #0d47a1; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+    <h2 style="margin-top: 20px;">Поиск соперника...</h2>
+    <p>Вы будете перенаправлены на задачу автоматически.</p>
+</div>
+
+<style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
+
+<script>
+    setInterval(() => {
+        fetch("{% url 'check_match_status' match.id %}")
+            .then(res => res.json())
+            .then(data => { if(data.ready) window.location.reload(); });
+    }, 2000);
+</script>
+{% endblock %}

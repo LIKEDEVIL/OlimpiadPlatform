@@ -1,0 +1,194 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 py-12 px-4 font-sans text-slate-900">
+    <div class="max-w-4xl mx-auto">
+
+        <div class="flex justify-between items-center mb-10 px-6">
+            <div class="flex flex-col items-start gap-2">
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Создатель</span>
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+                        <span class="text-white font-black text-xl">{{ room.creator.username|slice:":1"|upper }}</span>
+                    </div>
+                    <span class="text-xl font-bold text-slate-800">{{ room.creator.username }}</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center">
+                <div class="text-xs font-black text-slate-300 tracking-widest uppercase mb-1">Битва</div>
+                <div class="h-[1px] w-12 bg-slate-200"></div>
+            </div>
+
+            <div class="flex flex-col items-end gap-2">
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Соперник</span>
+                <div class="flex items-center gap-3">
+                    <span id="opponent-name" class="text-xl font-bold text-slate-800 text-right">
+                        {% if room.opponent %}{{ room.opponent.username }}{% else %}Ожидание...{% endif %}
+                    </span>
+                    <div class="w-12 h-12 rounded-2xl bg-white border-2 border-slate-100 flex items-center justify-center shadow-sm">
+                        <span class="text-slate-400 font-black text-xl">
+                            {% if room.opponent %}{{ room.opponent.username|slice:":1"|upper }}{% else %}?{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 shadow-xl shadow-slate-200/50 relative">
+
+            <div id="waiting-message" class="text-center py-16" {% if room.opponent %}style="display: none;"{% endif %}>
+                <div class="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mx-auto mb-6"></div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Ищем оппонента...</h2>
+                <p class="text-slate-500 small">Скоро начнется решение задачи</p>
+            </div>
+
+            <div id="game-content" {% if not room.opponent %}style="display: none;"{% endif %}>
+
+                <div class="mb-10 text-center">
+                    <div id="timer-display" class="text-6xl font-black text-slate-800 tracking-tighter mb-4">00:00</div>
+                    <div class="max-w-xs mx-auto h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div id="timer-bar" class="h-full bg-indigo-600 transition-all duration-1000" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 mb-8">
+                    <div class="flex gap-2 mb-4">
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[10px] font-black uppercase">
+                            {{ room.task.get_difficulty_display }}
+                        </span>
+                        <span class="px-3 py-1 bg-slate-200 text-slate-600 rounded-lg text-[10px] font-black uppercase">
+                            {{ room.task.get_subject_display }}
+                        </span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-slate-900 mb-4">{{ room.task.title }}</h1>
+                    <div class="text-slate-600 leading-relaxed text-lg">
+                        {{ room.task.description|linebreaks }}
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input type="text" id="user-answer" autofocus
+                           class="flex-1 bg-white border-2 border-slate-200 rounded-2xl px-6 py-4 text-xl font-bold focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 shadow-sm transition-all outline-none"
+                           placeholder="Ваш ответ...">
+
+                    <button id="submit-btn"
+                            class="bg-indigo-600 text-white font-black px-10 py-4 rounded-2xl hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-200 uppercase text-sm tracking-widest">
+                        Проверить
+                    </button>
+                </div>
+            </div>
+
+            <div id="result-message" class="mt-8 text-center p-6 rounded-2xl font-bold animate-fade-in" style="display: none;"></div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+    .animate-shake { animation: shake 0.2s ease-in-out infinite; }
+</style>
+
+<script>
+    // Безопасные переменные из Django
+    const ROOM_ID = "{{ room.id }}";
+    const IS_ACTIVE = "{{ room.is_active }}" === "True";
+    const HAS_OPPONENT = {% if room.opponent %}true{% else %}false{% endif %};
+    const TIME_LIMIT = parseInt("{{ room.time_limit|default:300 }}");
+    const CURRENT_USER = "{{ request.user.username }}";
+
+    const URL_SUBMIT = "{% url 'submit_pvp_solution' room.id %}";
+    const URL_TIMEOUT = "{% url 'timeout_pvp_room' room.id %}";
+    const URL_STATUS = "{% url 'check_room_status' room.id %}";
+    const URL_OPPONENT = "{% url 'check_opponent' room.id %}";
+    const URL_LOBBY = "{% url 'pvp_lobby' %}";
+
+    const resultDiv = document.getElementById('result-message');
+    const submitBtn = document.getElementById('submit-btn');
+    const answerInput = document.getElementById('user-answer');
+
+    function showStatus(type, text) {
+        if (!resultDiv) return;
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = text;
+        const base = "mt-8 text-center p-6 rounded-2xl font-bold animate-fade-in ";
+        if (type === 'success') resultDiv.className = base + "bg-green-100 text-green-700 border border-green-200";
+        else if (type === 'error') resultDiv.className = base + "bg-red-100 text-red-700 border border-red-200";
+        else resultDiv.className = base + "bg-slate-100 text-slate-600 border border-slate-200";
+    }
+
+    if (submitBtn) {
+        submitBtn.onclick = function() {
+            const answer = answerInput.value;
+            fetch(URL_SUBMIT, {
+                method: "POST",
+                headers: { "X-CSRFToken": "{{ csrf_token }}", "Content-Type": "application/x-www-form-urlencoded" },
+                body: `answer=${encodeURIComponent(answer)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'correct') {
+                    showStatus('success', '✅ ПРАВИЛЬНО! ВЫ ПОБЕДИЛИ!');
+                    submitBtn.disabled = true;
+                    if (window.gameTimer) clearInterval(window.gameTimer);
+                    setTimeout(() => { window.location.href = URL_LOBBY; }, 3000);
+                } else {
+                    showStatus('error', '❌ НЕВЕРНЫЙ ОТВЕТ');
+                    answerInput.classList.add('animate-shake');
+                    setTimeout(() => answerInput.classList.remove('animate-shake'), 400);
+                }
+            });
+        };
+    }
+
+    function startCountdown(seconds) {
+        let timeLeft = seconds;
+        const display = document.getElementById('timer-display');
+        const bar = document.getElementById('timer-bar');
+        window.gameTimer = setInterval(() => {
+            if (timeLeft <= 0) { clearInterval(window.gameTimer); finishByTimeout(); return; }
+            timeLeft--;
+            const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const secs = (timeLeft % 60).toString().padStart(2, '0');
+            display.innerText = `${mins}:${secs}`;
+            bar.style.width = (timeLeft / seconds * 100) + '%';
+            if (timeLeft < 30) display.className = "text-6xl font-black text-red-600 tracking-tighter mb-4";
+        }, 1000);
+    }
+
+    function finishByTimeout() {
+        showStatus('neutral', '⌛ ВРЕМЯ ВЫШЛО');
+        setTimeout(() => { window.location.href = URL_LOBBY; }, 3000);
+    }
+
+    function startGameWatcher() {
+        const watcher = setInterval(() => {
+            fetch(URL_STATUS)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.is_active) {
+                    clearInterval(watcher);
+                    if (data.winner && data.winner !== CURRENT_USER) {
+                        showStatus('error', `😞 ПОРАЖЕНИЕ! Победил ${data.winner}`);
+                        setTimeout(() => { window.location.href = URL_LOBBY; }, 3000);
+                    }
+                }
+            });
+        }, 2000);
+    }
+
+    if (!HAS_OPPONENT) {
+        const lobbyWatcher = setInterval(() => {
+            fetch(URL_OPPONENT).then(res => res.json()).then(data => {
+                if (data.ready) location.reload();
+            });
+        }, 3000);
+    } else if (IS_ACTIVE) {
+        startCountdown(TIME_LIMIT);
+        startGameWatcher();
+    }
+</script>
+{% endblock %}

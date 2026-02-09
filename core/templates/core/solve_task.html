@@ -1,0 +1,184 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div id="main-content-wrapper" class="transition-all duration-500 ease-in-out">
+    <div class="min-h-screen bg-slate-50 py-12 px-4">
+        <div class="max-w-3xl mx-auto">
+
+            <a href="{% url 'task_list' %}" class="inline-flex items-center text-slate-400 hover:text-indigo-600 font-bold text-sm mb-6 transition-colors group">
+                <svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Вернуться к списку
+            </a>
+
+            <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+
+                <div class="p-8 border-b border-slate-50 bg-slate-50/50">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-wider">
+                                {{ task.get_subject_display }}
+                            </span>
+                            <span class="px-3 py-1 {% if task.difficulty == 'easy' %}bg-emerald-100 text-emerald-600{% elif task.difficulty == 'medium' %}bg-amber-100 text-amber-600{% else %}bg-rose-100 text-rose-600{% endif %} rounded-full text-[10px] font-black uppercase tracking-wider">
+                                {{ task.get_difficulty_display }}
+                            </span>
+                        </div>
+                        <div id="timer-display" class="text-slate-400 font-mono text-xs font-bold bg-white px-3 py-1 rounded-full border border-slate-100 shadow-sm">
+                            00:00
+                        </div>
+                    </div>
+                    <h1 class="text-3xl font-black text-slate-800 leading-tight">{{ task.title }}</h1>
+                </div>
+
+                <div class="p-8">
+                    <div class="prose prose-slate max-w-none mb-10">
+                        <div class="text-slate-600 leading-relaxed text-lg">
+                            {{ task.description|linebreaks }}
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100">
+                        <h3 class="text-slate-400 font-black text-xs uppercase tracking-[0.2em] mb-4">Ваш ответ</h3>
+
+                        {% if is_solved %}
+                            <div class="bg-emerald-100 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3 mb-6 animate-bounce-short">
+                                <span class="text-emerald-600 text-xl">✅</span>
+                                <p class="text-emerald-700 font-bold text-sm">Вы уже правильно решили эту задачу!</p>
+                            </div>
+                        {% endif %}
+
+                        <form action="{% url 'submit_solution' %}" method="POST" id="solveForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="task_id" value="{{ task.id }}">
+                            <input type="hidden" name="time_spent" id="time_spent" value="0">
+                            <input type="hidden" name="is_surrendered" id="is_surrendered" value="0">
+
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <input type="text" name="answer" required autofocus
+                                       class="flex-1 bg-white border border-slate-200 rounded-2xl px-6 py-4 text-slate-800 font-bold placeholder:text-slate-400 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all shadow-sm text-lg"
+                                       placeholder="Введите результат...">
+
+                                <button type="submit"
+                                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-10 py-4 rounded-2xl transition-all shadow-lg shadow-indigo-200 active:scale-95 text-lg">
+                                    Отправить
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="border-t border-slate-200 pt-6 mt-8 text-center">
+                            <div id="surrender-warning" class="mb-4 hidden">
+                                <div class="bg-rose-50 border border-rose-100 rounded-2xl p-4 flex items-start gap-3 text-left shadow-sm">
+                                    <span class="text-rose-500 mt-1">⚠️</span>
+                                    <div>
+                                        <p class="text-rose-800 font-bold text-sm">Внимание!</p>
+                                        <p class="text-rose-700/80 text-xs leading-relaxed">Просмотр ответа считается сдачей. <b>Рейтинг (Эло) за эту задачу начислен не будет.</b></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button id="showAnswerBtn" onclick="confirmReveal()"
+                                    class="text-slate-400 hover:text-rose-500 font-bold text-sm transition-all flex items-center gap-2 mx-auto px-4 py-2 rounded-xl hover:bg-rose-50">
+                                <i class="fas fa-flag"></i>
+                                Я не могу решить, показать ответ
+                            </button>
+
+                            <div id="answerSection" class="hidden mt-4 p-6 bg-slate-900 rounded-[2rem] text-left animate-fade-in shadow-2xl">
+                                <div class="flex justify-between items-center mb-4">
+                                    <span class="px-3 py-1 bg-amber-500 text-white rounded-full text-[10px] font-black uppercase">Правильный ответ</span>
+                                    <span class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Самопроверка</span>
+                                </div>
+
+                                <div class="text-3xl font-black text-white mb-4 tracking-tight">
+                                    {{ task.correct_answer }}
+                                </div>
+
+                                {% if task.solution_hint %}
+                                <div class="bg-slate-800/50 rounded-2xl p-4 border border-slate-700">
+                                    <p class="text-slate-300 text-sm leading-relaxed">
+                                        <b class="text-indigo-400">Разбор:</b> {{ task.solution_hint }}
+                                    </p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .content-shifted { margin-right: 480px; }
+
+    @media (max-width: 1400px) {
+        .content-shifted {
+            margin-right: 0;
+            opacity: 0.3;
+            filter: blur(2px);
+            pointer-events: none;
+            transform: translateX(-50px);
+        }
+    }
+
+    @keyframes bounce-short {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-4px); }
+    }
+    .animate-bounce-short { animation: bounce-short 2s ease-in-out infinite; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+</style>
+
+<script>
+    let seconds = 0;
+    let startTime = Date.now();
+    const timerDisplay = document.getElementById('timer-display');
+    const form = document.getElementById('solveForm');
+
+    setInterval(() => {
+        seconds++;
+        const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const secs = (seconds % 60).toString().padStart(2, '0');
+        timerDisplay.innerText = `${mins}:${secs}`;
+    }, 1000);
+
+    form.onsubmit = function() {
+        let timeSpent = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById('time_spent').value = timeSpent;
+        return true;
+    };
+
+    function confirmReveal() {
+        const warning = document.getElementById('surrender-warning');
+        const btn = document.getElementById('showAnswerBtn');
+        const section = document.getElementById('answerSection');
+        const surrenderInput = document.getElementById('is_surrendered');
+
+        if (warning.classList.contains('hidden')) {
+            warning.classList.remove('hidden');
+            warning.classList.add('animate-fade-in');
+            btn.innerHTML = '<i class="fas fa-check"></i> Да, я сдаюсь, показать ответ';
+            btn.classList.replace('text-slate-400', 'text-rose-600');
+            btn.classList.add('bg-rose-50');
+        } else {
+            section.classList.remove('hidden');
+            btn.classList.add('hidden');
+            warning.classList.add('opacity-50');
+
+            // Устанавливаем флаг сдачи в 1
+            surrenderInput.value = "1";
+        }
+    }
+</script>
+
+{% include 'includes/helper_hub.html' %}
+
+{% endblock %}

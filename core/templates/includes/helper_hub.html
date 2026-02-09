@@ -1,0 +1,248 @@
+<div class="fixed bottom-8 right-8 z-[60]">
+    <button onclick="toggleSidebar()" class="w-16 h-16 bg-indigo-600 text-white rounded-3xl shadow-2xl shadow-indigo-200 flex items-center justify-center hover:bg-indigo-700 transition-all duration-300 active:scale-90" id="sidebarBtn">
+        <i class="fas fa-calculator text-2xl" id="sidebarIcon"></i>
+    </button>
+</div>
+
+<div id="helper-sidebar" class="fixed top-0 right-0 h-full w-[480px] bg-white border-l border-slate-100 shadow-2xl z-50 transform translate-x-full transition-transform duration-500 ease-in-out flex flex-col">
+
+    <div class="p-6 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-black text-slate-800 leading-none">Smart Helper</h2>
+            <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-bold">Инженерная версия</p>
+        </div>
+        <button onclick="toggleSidebar()" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-400 hover:text-rose-500 transition-all shadow-sm">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+    </div>
+
+    <div class="p-6 flex-1 overflow-y-auto light-scrollbar bg-white">
+
+        <div class="mb-10 bg-slate-50 border border-slate-100 p-6 rounded-[2.5rem]">
+            <input type="text" id="calc-display" readonly class="w-full bg-transparent text-right text-4xl font-mono font-bold mb-6 outline-none text-slate-800" value="0">
+            <div class="grid grid-cols-4 gap-3">
+                <button onclick="calcOp('sin')" class="p-4 bg-white border border-slate-100 rounded-2xl text-xs font-black text-indigo-500 hover:bg-indigo-50">SIN</button>
+                <button onclick="calcOp('cos')" class="p-4 bg-white border border-slate-100 rounded-2xl text-xs font-black text-indigo-500 hover:bg-indigo-50">COS</button>
+                <button onclick="calcOp('log')" class="p-4 bg-white border border-slate-100 rounded-2xl text-xs font-black text-indigo-500 hover:bg-indigo-50">LOG</button>
+                <button onclick="calcOp('pow')" class="p-4 bg-white border border-slate-100 rounded-2xl text-xs font-black text-indigo-500 hover:bg-indigo-50">xʸ</button>
+
+                <button onclick="calcClear()" class="p-5 bg-rose-50 text-rose-600 rounded-2xl text-lg font-black hover:bg-rose-100">AC</button>
+                <button onclick="calcOp('sqrt')" class="p-5 bg-white border border-slate-100 rounded-2xl text-lg font-bold">√</button>
+                <button onclick="calcIn('%')" class="p-5 bg-white border border-slate-100 rounded-2xl text-lg font-bold">%</button>
+                <button onclick="calcIn('/')" class="p-5 bg-indigo-50 text-indigo-600 rounded-2xl text-lg font-black">/</button>
+
+                <button onclick="calcIn('7')" class="p-5 bg-white border border-slate-100 rounded-2xl text-xl font-bold text-slate-700 hover:border-indigo-400">7</button>
+                <button onclick="calcIn('8')" class="p-5 bg-white border border-slate-100 rounded-2xl text-xl font-bold text-slate-700 hover:border-indigo-400">8</button>
+                <button onclick="calcIn('9')" class="p-5 bg-white border border-slate-100 rounded-2xl text-xl font-bold text-slate-700 hover:border-indigo-400">9</button>
+                <button onclick="calcIn('*')" class="p-5 bg-indigo-50 text-indigo-600 rounded-2xl text-xl font-black">×</button>
+
+                <button onclick="calcIn('4')" class="p-5 bg-white border border-slate-100 rounded-2xl text-xl font-bold text-slate-700 hover:border-indigo-400">4</button>
+                <button onclick="calcIn('5')" class="p-5 bg-white border border-slate-100 rounded-2xl text-xl font-bold text-slate-700 hover:border-indigo-400">5</button>
+                <button onclick="calcIn('6')" class="p-5 bg-white border border-slate-100 rounded-2xl text-xl font-bold text-slate-700 hover:border-indigo-400">6</button>
+                <button onclick="calcIn('-')" class="p-5 bg-indigo-50 text-indigo-600 rounded-2xl text-xl font-black">−</button>
+
+                <button onclick="calcIn('1')" class="p-5 bg-white border border-slate-100 rounded-2xl text-xl font-bold text-slate-700 hover:border-indigo-400">1</button>
+                <button onclick="calcIn('2')" class="p-5 bg-white border border-slate-100 rounded-2xl text-xl font-bold text-slate-700 hover:border-indigo-400">2</button>
+                <button onclick="calcIn('3')" class="p-5 bg-white border border-slate-100 rounded-2xl text-xl font-bold text-slate-700 hover:border-indigo-400">3</button>
+                <button onclick="calcIn('+')" class="p-5 bg-indigo-50 text-indigo-600 rounded-2xl text-xl font-black">+</button>
+
+                <button onclick="calcIn('0')" class="p-5 bg-white border border-slate-100 rounded-2xl text-xl font-bold text-slate-700">0</button>
+                <button onclick="calcIn('.')" class="p-5 bg-white border border-slate-100 rounded-2xl text-xl font-bold text-slate-700">.</button>
+                <button onclick="calcResult()" class="p-5 col-span-2 bg-indigo-600 rounded-2xl text-xl font-black text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100">=</button>
+            </div>
+        </div>
+
+        <div class="space-y-6 pb-40">
+            <details class="group border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm" open>
+                <summary class="p-5 bg-indigo-50/30 list-none font-black text-slate-700 cursor-pointer flex justify-between items-center text-lg">
+                    <span>📐 Математика</span>
+                    <i class="fas fa-chevron-down text-sm transition-transform group-open:rotate-180"></i>
+                </summary>
+                <div class="p-6 bg-white border-t border-slate-50 space-y-4 text-center">
+                    <div class="formula-block">$$ (a \pm b)^2 = a^2 \pm 2ab + b^2 $$</div>
+                    <div class="formula-block">$$ a^2 - b^2 = (a-b)(a+b) $$</div>
+                    <div class="formula-block">$$ x_{1,2} = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} $$</div>
+                    <div class="formula-block">$$ \log_a (bc) = \log_a b + \log_a c $$</div>
+                    <div class="formula-block">$$ \sin^2 \alpha + \cos^2 \alpha = 1 $$</div>
+                    <div class="formula-block">$$ \text{tg } \alpha = \frac{\sin \alpha}{\cos \alpha} $$</div>
+                    <div class="formula-block">$$ \sin 2\alpha = 2 \sin \alpha \cos \alpha $$</div>
+                    <div class="formula-block">$$ \cos 2\alpha = \cos^2 \alpha - \sin^2 \alpha $$</div>
+                    <div class="formula-block">$$ (x^n)' = nx^{n-1} $$</div>
+                    <div class="formula-block">$$ (\sin x)' = \cos x $$</div>
+                    <div class="formula-block">$$ (\ln x)' = \frac{1}{x} $$</div>
+                    <div class="formula-block">$$ S = \pi r^2; \quad V_{ш} = \frac{4}{3} \pi r^3 $$</div>
+                    <div class="formula-block">$$ c^2 = a^2 + b^2 - 2ab \cos \gamma $$</div>
+                </div>
+            </details>
+
+            <details class="group border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm">
+                <summary class="p-5 bg-emerald-50/30 list-none font-black text-slate-700 cursor-pointer flex justify-between items-center text-lg">
+                    <span>⚡ Физика</span>
+                    <i class="fas fa-chevron-down text-sm transition-transform group-open:rotate-180"></i>
+                </summary>
+                <div class="p-6 bg-white border-t border-slate-50 space-y-4 text-center">
+                    <div class="formula-block">$$ F = ma; \quad p = mv $$</div>
+                    <div class="formula-block">$$ A = Fs \cos \alpha $$</div>
+                    <div class="formula-block">$$ E_k = \frac{mv^2}{2}; \quad E_p = mgh $$</div>
+                    <div class="formula-block">$$ F_{упр} = kx; \quad PV = \nu RT $$</div>
+                    <div class="formula-block">$$ U = \frac{3}{2} \nu RT; \quad Q = cm \Delta T $$</div>
+                    <div class="formula-block">$$ I = \frac{U}{R}; \quad P = UI; \quad Q = I^2 Rt $$</div>
+                    <div class="formula-block">$$ C = \frac{q}{U}; \quad \Phi = BS \cos \alpha $$</div>
+                    <div class="formula-block">$$ F_{лор} = qvB \sin \alpha; \quad E = h\nu $$</div>
+                    <div class="formula-block">$$ D = \frac{1}{F} = \frac{1}{d} + \frac{1}{f} $$</div>
+                    <div class="formula-block">$$ a_c = \frac{v^2}{r}; \quad \omega = 2\pi\nu $$</div>
+                </div>
+            </details>
+
+            <details class="group border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm">
+                <summary class="p-5 bg-amber-50/30 list-none font-black text-slate-700 cursor-pointer flex justify-between items-center text-lg">
+                    <span>💻 Информатика</span>
+                    <i class="fas fa-chevron-down text-sm transition-transform group-open:rotate-180"></i>
+                </summary>
+                <div class="p-6 bg-white space-y-6 border-t border-slate-50">
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="bg-slate-50 p-5 rounded-2xl text-base font-mono leading-loose">
+                            <b class="text-amber-600 block mb-2 text-lg">Данные:</b>
+                            $N = 2^i$<br>
+                            $I = K \cdot i$<br>
+                            $I = t \cdot f \cdot i \cdot k$ (Звук)<br>
+                            $I = x \cdot y \cdot i$ (Пиксели)
+                        </div>
+                        <div class="bg-slate-50 p-5 rounded-2xl text-base font-mono leading-loose">
+                            <b class="text-amber-600 block mb-2 text-lg">Комбинаторика:</b>
+                            $P_n = n!$<br>
+                            $C_n^k = \frac{n!}{k!(n-k)!}$<br>
+                            $A_n^k = \frac{n!}{(n-k)!}$
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 text-indigo-300 p-6 rounded-2xl font-mono text-base leading-loose shadow-inner">
+                        <b class="text-white block mb-3 text-center border-b border-slate-700 pb-2">Логика:</b>
+                        A → B ≡ ¬A ∨ B<br>
+                        ¬(A ∧ B) ≡ ¬A ∨ ¬B<br>
+                        A ↔ B ≡ (A ∧ B) ∨ (¬A ∧ ¬B)
+                    </div>
+                    <div class="p-4 bg-indigo-50 rounded-xl text-center font-black text-indigo-600 tracking-wider text-base">
+                        O(1) < O(log N) < O(N) < O(N log N)
+                    </div>
+                </div>
+            </details>
+
+            <details class="group border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm">
+                <summary class="p-5 bg-slate-50 list-none font-black text-slate-700 cursor-pointer flex justify-between items-center text-lg">
+                    <span>🧪 Константы (СИ)</span>
+                    <i class="fas fa-chevron-down text-sm transition-transform group-open:rotate-180"></i>
+                </summary>
+                <div class="p-6 bg-white space-y-4 border-t border-slate-50">
+
+                    <div class="space-y-2">
+                        <p class="text-xs font-black text-indigo-400 uppercase tracking-widest ml-2">Общие</p>
+                        <div class="flex justify-between items-center p-4 bg-slate-50 rounded-xl text-lg font-mono">
+                            <b class="text-slate-800">g</b> <span>9.81 м/с²</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-slate-50 rounded-xl text-lg font-mono">
+                            <b class="text-slate-800">c</b> <span>3·10⁸ м/с</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-slate-50 rounded-xl text-lg font-mono">
+                            <b class="text-slate-800">G</b> <span>6.67·10⁻¹¹</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-slate-50 rounded-xl text-lg font-mono">
+                            <b class="text-slate-800">h</b> <span>6.63·10⁻³⁴</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <p class="text-xs font-black text-rose-400 uppercase tracking-widest ml-2">Микромир</p>
+                        <div class="flex justify-between items-center p-4 bg-rose-50/30 rounded-xl text-lg font-mono border border-rose-50">
+                            <b class="text-slate-800">e</b> <span>1.6·10⁻¹⁹ Кл</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-rose-50/30 rounded-xl text-lg font-mono border border-rose-50">
+                            <b class="text-slate-800">mₑ</b> <span>9.1·10⁻³¹ кг</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-rose-50/30 rounded-xl text-lg font-mono border border-rose-50">
+                            <b class="text-slate-800">Nₐ</b> <span>6.02·10²³</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <p class="text-xs font-black text-amber-400 uppercase tracking-widest ml-2">Математика</p>
+                        <div class="flex justify-between items-center p-4 bg-amber-50/30 rounded-xl text-lg font-mono border border-amber-50">
+                            <b class="text-slate-800">π</b> <span>3.14159...</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-amber-50/30 rounded-xl text-lg font-mono border border-amber-50">
+                            <b class="text-slate-800">R</b> <span>8.31 Дж/моль·К</span>
+                        </div>
+                    </div>
+
+                </div>
+            </details>
+        </div>
+    </div>
+</div>
+
+<style>
+    .light-scrollbar::-webkit-scrollbar { width: 6px; }
+    .light-scrollbar::-webkit-scrollbar-track { background: #f8fafc; }
+    .light-scrollbar::-webkit-scrollbar-thumb { background: #e2e8h0; border-radius: 10px; }
+
+    .formula-block {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 5px 0;
+        scrollbar-width: none;
+    }
+    .formula-block::-webkit-scrollbar { display: none; }
+
+    .mjx-container {
+        margin: 0 !important;
+        display: inline-block !important;
+    }
+</style>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('helper-sidebar');
+        const wrapper = document.getElementById('main-content-wrapper');
+        const icon = document.getElementById('sidebarIcon');
+
+        if (sidebar.classList.contains('translate-x-full')) {
+            sidebar.classList.remove('translate-x-full');
+            wrapper.classList.add('content-shifted');
+            icon.classList.replace('fa-calculator', 'fa-times');
+        } else {
+            sidebar.classList.add('translate-x-full');
+            wrapper.classList.remove('content-shifted');
+            icon.classList.replace('fa-times', 'fa-calculator');
+        }
+    }
+
+    const calcDisplay = document.getElementById('calc-display');
+    function calcIn(v) {
+        if(calcDisplay.value === '0') calcDisplay.value = v;
+        else calcDisplay.value += v;
+    }
+    function calcClear() { calcDisplay.value = '0'; }
+    function calcResult() {
+        try {
+            let expr = calcDisplay.value.replace('×', '*').replace('÷', '/').replace('^', '**');
+            let res = eval(expr);
+            calcDisplay.value = Number.isInteger(res) ? res : res.toFixed(4);
+        } catch {
+            calcDisplay.value = 'Error';
+            setTimeout(calcClear, 1000);
+        }
+    }
+    function calcOp(op) {
+        let current = eval(calcDisplay.value);
+        if(op === 'sqrt') calcDisplay.value = Math.sqrt(current).toFixed(4);
+        if(op === 'sin') calcDisplay.value = Math.sin(current * Math.PI / 180).toFixed(4);
+        if(op === 'cos') calcDisplay.value = Math.cos(current * Math.PI / 180).toFixed(4);
+        if(op === 'log') calcDisplay.value = Math.log10(current).toFixed(4);
+        if(op === 'pow') calcDisplay.value += '**';
+    }
+</script>
+
+<script>
+    window.MathJax = { tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] } };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>

@@ -1,0 +1,105 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 px-4">
+    <div class="bg-slate-900 rounded-3xl p-8 mb-8 text-white shadow-2xl">
+        <div class="flex justify-between items-center">
+            <div class="text-center">
+                <p class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Игрок 1</p>
+                <h3 class="text-xl font-bold text-indigo-400">{{ room.creator.username }}</h3>
+            </div>
+
+            <div class="text-center bg-slate-800 px-8 py-4 rounded-2xl border border-slate-700">
+                <div id="pvp-timer" class="text-4xl font-black text-indigo-500">05:00</div>
+                <p class="text-[10px] text-slate-500 font-bold uppercase mt-1">Осталось времени</p>
+            </div>
+
+            <div class="text-center">
+                <p class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Игрок 2</p>
+                <h3 class="text-xl font-bold text-rose-400">
+                    {% if room.players.all %}{{ room.players.all.0.username }}{% else %}Ожидание...{% endif %}
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+            <span class="bg-indigo-50 text-indigo-600 text-[10px] font-black px-3 py-1 rounded-full uppercase mb-4 inline-block">Задание #{{ room.id }}</span>
+            <h2 class="text-2xl font-black text-slate-800 mb-4">{{ room.task.title }}</h2>
+            <div class="text-slate-600 leading-relaxed font-medium">
+                {{ room.task.description|linebreaks }}
+            </div>
+        </div>
+
+        <div class="bg-slate-50 rounded-3xl p-8 border-2 border-dashed border-slate-200">
+            <h4 class="font-black text-slate-800 mb-6 uppercase text-sm tracking-tight">Ваш ответ</h4>
+            <div class="space-y-4">
+                <input type="text" id="answer-input" placeholder="Введите результат..."
+                       class="w-full bg-white border-2 border-slate-200 rounded-2xl px-5 py-4 font-bold outline-none focus:border-indigo-500 transition-all">
+                <button onclick="sendAnswer()" id="solve-btn"
+                        class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
+                    ПРОВЕРИТЬ
+                </button>
+            </div>
+            <p class="text-[10px] text-slate-400 font-bold mt-6 leading-tight">
+                * Побеждает тот, кто первым отправит верный ответ. Рейтинг начислится автоматически.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const roomId = "{{ room.id }}";
+    const socketProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const socket = new WebSocket(`${socketProtocol}${window.location.host}/ws/pvp/${roomId}/`);
+
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.action === 'finish') {
+            alert("Матч завершен! Победитель: " + data.winner);
+            window.location.href = "{% url 'pvp_lobby' %}";
+        }
+    };
+
+    async function sendAnswer() {
+        const input = document.getElementById('answer-input');
+        const btn = document.getElementById('solve-btn');
+        const answer = input.value;
+
+        btn.disabled = true;
+        btn.innerText = "ПРОВЕРКА...";
+
+        const response = await fetch(`/pvp/submit/${roomId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `answer=${encodeURIComponent(answer)}`
+        });
+
+        const result = await response.json();
+        if (result.status === 'correct') {
+            socket.send(JSON.stringify({
+                'action': 'win',
+                'winner': result.winner
+            }));
+        } else {
+            alert("Неверный ответ!");
+            btn.disabled = false;
+            btn.innerText = "ПРОВЕРИТЬ";
+        }
+    }
+
+    // Простой таймер
+    let time = 300;
+    setInterval(() => {
+        if(time <= 0) return;
+        time--;
+        let m = Math.floor(time / 60);
+        let s = time % 60;
+        document.getElementById('pvp-timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+    }, 1000);
+</script>
+{% endblock %}

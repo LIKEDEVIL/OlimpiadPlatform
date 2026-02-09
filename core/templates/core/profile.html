@@ -1,0 +1,118 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="min-h-screen bg-slate-50 py-12 px-4">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 p-8">
+
+            <div class="flex flex-col md:flex-row items-center gap-8 mb-10">
+                <div class="w-32 h-32 bg-indigo-600 text-white rounded-[2.5rem] flex items-center justify-center text-5xl font-black shadow-lg shadow-indigo-200 ring-8 ring-indigo-50">
+                    {{ user.username|first|upper }}
+                </div>
+                <div class="text-center md:text-left">
+                    <h2 class="text-3xl font-black text-slate-800">{{ user.username }}</h2>
+                    <p class="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">
+                        {% if profile.rating > 1500 %}Элитный мастер{% elif profile.rating > 1200 %}Продвинутый игрок{% else %}Начинающий исследователь{% endif %}
+                    </p>
+                    <div class="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
+                         <span class="px-5 py-2.5 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-2xl font-black text-sm flex items-center gap-2 shadow-sm">
+                             <span class="text-indigo-500 text-base">🏆</span> {{ profile.rating }} ELO
+                         </span>
+                         <span class="px-5 py-2.5 bg-white border border-slate-100 text-slate-400 rounded-2xl font-bold text-sm shadow-sm">
+                             ID: #{{ user.id }}
+                         </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                <div class="p-6 bg-purple-50 rounded-[2rem] border border-purple-100 transition-all hover:scale-[1.05] hover:shadow-md shadow-sm">
+                    <p class="text-purple-400 text-[10px] font-black uppercase tracking-wider mb-2">Место в топе</p>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-3xl font-black text-purple-900">#{{ rank }}</span>
+                        <span class="text-purple-400 text-[10px] font-bold ml-1">из {{ total_users }}</span>
+                    </div>
+                    <p class="text-purple-300 text-[10px] mt-1 font-bold">глобальный ранг</p>
+                </div>
+
+                <div class="p-6 bg-blue-50 rounded-[2rem] border border-blue-100 transition-all hover:scale-[1.02] shadow-sm">
+                    <p class="text-blue-400 text-[10px] font-black uppercase tracking-wider mb-2">Аккуратность</p>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-3xl font-black text-blue-900">{{ accuracy }}%</span>
+                    </div>
+                    <p class="text-blue-300 text-[10px] mt-1 font-bold">{{ correct_count }} задач решено</p>
+                </div>
+
+                <div class="p-6 bg-emerald-50 rounded-[2rem] border border-emerald-100 transition-all hover:scale-[1.02] shadow-sm">
+                    <p class="text-emerald-400 text-[10px] font-black uppercase tracking-wider mb-2">Скорость</p>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-3xl font-black text-emerald-900">{{ avg_speed }}</span>
+                        <span class="text-emerald-400 font-bold text-[10px]">сек.</span>
+                    </div>
+                    <p class="text-emerald-300 text-[10px] mt-1 font-bold">в среднем на задачу</p>
+                </div>
+
+                <div class="p-6 bg-amber-50 rounded-[2rem] border border-amber-100 transition-all hover:scale-[1.02] shadow-sm">
+                    <p class="text-amber-400 text-[10px] font-black uppercase tracking-wider mb-2">Настойчивость</p>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-3xl font-black text-amber-900">{{ all_attempts }}</span>
+                    </div>
+                    <p class="text-amber-300 text-[10px] mt-1 font-bold">всего попыток решения</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 rounded-[2.5rem] p-8 mb-10">
+                <h4 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-3">
+                    <span class="w-2 h-6 bg-indigo-500 rounded-full"></span>
+                    Успехи по предметам
+                </h4>
+                <div class="space-y-6">
+                    {% for stat in subject_stats %}
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                        <div class="flex justify-between items-end mb-3">
+                            <span class="font-bold text-slate-700">{{ stat.name }}</span>
+                            <span class="text-indigo-600 font-black text-sm">{{ stat.count }} решено</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                            <div class="bg-indigo-500 h-full rounded-full bar-animation"
+                                 style="width: {% if stat.count > 10 %}100{% else %}{{ stat.count }}0{% endif %}%">
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-6">
+                        <p class="text-slate-400 text-sm font-medium italic">Статистика появится после первой задачи.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <a href="{% url 'generate_variant' %}" class="flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-5 rounded-2xl transition-all shadow-lg shadow-indigo-100 active:scale-[0.98]">
+                    <span>📝</span> Сгенерировать вариант
+                </a>
+
+                <form action="{% url 'logout' %}" method="post" class="w-full m-0 p-0">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-100 text-slate-400 hover:text-red-500 hover:border-red-100 font-bold py-5 rounded-2xl transition-all active:scale-[0.98] cursor-pointer">
+                        <span>🚪</span> Выйти из системы
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <p class="text-center text-slate-300 text-[10px] font-bold uppercase tracking-[0.3em] mt-8">
+            System status: active &middot; Version 2.4.0
+        </p>
+    </div>
+</div>
+
+<style>
+    @keyframes progressLoad {
+        from { width: 0; }
+    }
+    .bar-animation {
+        animation: progressLoad 1.5s ease-out forwards;
+    }
+</style>
+{% endblock %}

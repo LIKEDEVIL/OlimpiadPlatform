@@ -1,0 +1,141 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="mb-12">
+        <h1 class="text-5xl font-black text-slate-900 tracking-tighter mb-3 uppercase">PvP Арена</h1>
+        <p class="text-slate-500 font-bold tracking-tight">Настрой параметры дуэли или прими вызов</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+        <div class="lg:col-span-4">
+            <div class="bg-white border-2 border-slate-100 rounded-[2.5rem] p-8 shadow-sm sticky top-24">
+                <h3 class="text-xl font-black text-slate-800 mb-8 flex items-center gap-3">
+                    <i class="fas fa-sliders-h text-indigo-600"></i> Параметры боя
+                </h3>
+
+                {% if not user_room %}
+                <form action="{% url 'create_room' %}" method="post" class="space-y-6">
+                    {% csrf_token %}
+
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Дисциплина</label>
+                        <select name="subject" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold text-slate-700 outline-none focus:border-indigo-500 transition-all cursor-pointer">
+                            <option value="math" selected>📐 Математика</option>
+                            <option value="phys">⚡ Физика</option>
+                            <option value="inf">💻 Информатика</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Уровень задач</label>
+                        <select name="difficulty" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold text-slate-700 outline-none focus:border-indigo-500 transition-all cursor-pointer">
+                            <option value="easy">Easy (База)</option>
+                            <option value="medium" selected>Medium (Олимпы)</option>
+                            <option value="hard">Hard (Хардкор)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Лимит времени</label>
+                        <select name="time_limit" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold text-slate-700 outline-none focus:border-indigo-500 transition-all cursor-pointer">
+                            <option value="60">1 минута (Блиц)</option>
+                            <option value="300" selected>5 минут (Стандарт)</option>
+                            <option value="600">10 минут (Лонг)</option>
+                            <option value="1200">20 минут (Экзамен)</option> </select>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 transition-all">
+                        Открыть лобби
+                    </button>
+                </form>
+                {% else %}
+                <div class="text-center py-10 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                    <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse text-xl">
+                        <i class="fas fa-broadcast-tower"></i>
+                    </div>
+                    <p class="text-slate-900 font-black uppercase text-sm">Сигнал активен</p>
+                    <p class="text-slate-400 text-[10px] font-bold mt-2 px-6 leading-relaxed uppercase">
+                        Ожидание соперника...<br>Бой начнется автоматически
+                    </p>
+                </div>
+
+                <script>
+                    const checkStart = setInterval(() => {
+                        fetch("{% url 'check_opponent' user_room.id %}")
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.ready) {
+                                    clearInterval(checkStart);
+                                    window.location.href = "{% url 'pvp_room' user_room.id %}";
+                                }
+                            });
+                    }, 3000);
+                </script>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 space-y-6">
+
+            {% if user_room %}
+            <div class="bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden mb-10 ring-8 ring-indigo-500/10">
+                <div class="relative z-10 flex justify-between items-center">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-white/20 text-[10px] font-black px-3 py-1 rounded-full border border-white/30 uppercase tracking-widest">Твоя битва</span>
+                            <span class="bg-indigo-400/30 text-[10px] font-black px-3 py-1 rounded-full border border-white/10 uppercase tracking-widest">
+                                {{ user_room.get_subject_display }}
+                            </span>
+                        </div>
+                        <h2 class="text-3xl font-black tracking-tighter uppercase">Твое лобби в эфире</h2>
+                        <div class="flex gap-5 mt-4">
+                            <span class="text-xs font-bold text-indigo-100/70"><i class="fas fa-brain mr-2"></i>{{ user_room.get_difficulty_display }}</span>
+                            <span class="text-xs font-bold text-indigo-100/70"><i class="fas fa-hourglass-half mr-2"></i>{{ user_room.time_limit }} сек</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.4em] mb-6 ml-4">Доступные арены</h3>
+
+            {% for room in rooms %}
+            <div class="bg-white border-2 border-slate-50 rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl hover:shadow-indigo-100/50 hover:border-indigo-100 transition-all group flex flex-col sm:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-6 w-full">
+                    <div class="w-20 h-20 bg-slate-900 rounded-3xl flex items-center justify-center text-3xl font-black text-white group-hover:bg-indigo-600 transition-all shadow-lg">
+                        {{ room.creator.username|first|upper }}
+                    </div>
+                    <div>
+                        <h4 class="text-2xl font-black text-slate-800 tracking-tight">{{ room.creator.username }}</h4>
+                        <div class="flex flex-wrap gap-3 mt-2">
+                            <span class="text-[10px] font-black px-3 py-1 rounded-lg bg-indigo-50 text-indigo-600 uppercase tracking-widest">
+                                {% if room.subject == 'math' %}📐{% elif room.subject == 'phys' %}⚡{% else %}💻{% endif %} {{ room.get_subject_display }}
+                            </span>
+                            <span class="text-[10px] font-black px-3 py-1 rounded-lg bg-slate-100 text-slate-500 uppercase tracking-widest">{{ room.get_difficulty_display }}</span>
+                            <span class="text-[10px] font-black px-3 py-1 rounded-lg bg-amber-50 text-amber-600 uppercase tracking-widest">ELO: {{ room.creator.profile.rating }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form action="{% url 'join_room' room.id %}" method="post" class="w-full sm:w-auto">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full sm:w-auto bg-slate-900 text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 group-hover:shadow-indigo-100">
+                        Бросить вызов
+                    </button>
+                </form>
+            </div>
+            {% empty %}
+                {% if not user_room %}
+                <div class="py-32 text-center bg-white rounded-[3rem] border-2 border-dashed border-slate-100">
+                    <div class="text-6xl mb-6">🏜️</div>
+                    <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-sm">Тихо, как в пустыне...</p>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 4rem auto; text-align: center;">
+    <div class="card">
+        {% if match.winner == user %}
+            <i class="fas fa-trophy fa-5x" style="color: #f59e0b; margin-bottom: 1.5rem;"></i>
+            <h1 style="color: #10b981;">ПОБЕДА!</h1>
+            <p>Вы оказались быстрее и заработали +50 очков рейтинга.</p>
+        {% else %}
+            <i class="fas fa-heart-broken fa-5x" style="color: #ef4444; margin-bottom: 1.5rem;"></i>
+            <h1 style="color: #ef4444;">ПОРАЖЕНИЕ</h1>
+            <p>Ваш противник <b>{{ match.winner.username }}</b> решил задачу первым.</p>
+        {% endif %}
+        
+        <hr style="margin: 2rem 0; border: 0; border-top: 1px solid #e2e8f0;">
+        <a href="{% url 'pvp_lobby' %}" class="btn-main">Искать новую дуэль</a>
+        <a href="{% url 'index' %}" style="display: block; margin-top: 1rem; color: #64748b;">На главную</a>
+    </div>
+</div>
+{% endblock %}

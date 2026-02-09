@@ -1,0 +1,113 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-12 px-4">
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-black text-slate-800 mb-4 tracking-tight">Глобальный рейтинг</h1>
+        <p class="text-slate-500 font-medium">Топ игроков платформы по количеству очков ELO</p>
+    </div>
+
+    <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+        <table class="w-full border-collapse text-left">
+            <thead>
+                <tr class="bg-slate-50/50 border-b border-slate-100">
+                    <th class="px-8 py-5 text-xs font-bold uppercase tracking-wider text-slate-400">Место</th>
+                    <th class="px-8 py-5 text-xs font-bold uppercase tracking-wider text-slate-400">Игрок</th>
+                    <th class="px-8 py-5 text-xs font-bold uppercase tracking-wider text-slate-400 text-right">Рейтинг</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+                {% for profile in profiles %}
+                <tr class="transition-all duration-300
+                    {% if profile.user == user %}
+                        bg-indigo-600/[0.04]
+                    {% elif forloop.counter == 1 %} bg-amber-100/60
+                    {% elif forloop.counter == 2 %} bg-slate-200/70
+                    {% elif forloop.counter == 3 %} bg-orange-200/50
+                    {% else %} hover:bg-slate-50/80 {% endif %}">
+
+                    <td class="px-8 py-5">
+                        <div class="flex items-center">
+                            {% if forloop.counter == 1 %}
+                                <span class="w-9 h-9 rounded-full bg-amber-200 text-amber-700 flex items-center justify-center shadow-sm border-2 border-amber-300/50">
+                                    <i class="fas fa-crown text-xs"></i>
+                                </span>
+                            {% elif forloop.counter == 2 %}
+                                <span class="w-9 h-9 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center shadow-sm border-2 border-slate-400/40">
+                                    <i class="fas fa-medal text-xs"></i>
+                                </span>
+                            {% elif forloop.counter == 3 %}
+                                <span class="w-9 h-9 rounded-full bg-orange-300/60 text-orange-800 flex items-center justify-center shadow-sm border-2 border-orange-400/40">
+                                    <i class="fas fa-medal text-xs"></i>
+                                </span>
+                            {% else %}
+                                <span class="w-9 h-9 flex items-center justify-center text-slate-400 font-bold text-sm">
+                                    {{ forloop.counter }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </td>
+
+                    <td class="px-8 py-5">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-700 font-black shadow-sm {% if profile.user == user %} border-indigo-300 text-indigo-600 shadow-indigo-100 {% endif %}">
+                                {{ profile.user.username|first|upper }}
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold {% if profile.user == user %} text-indigo-600 {% else %} text-slate-800 {% endif %} block">
+                                        {{ profile.user.username }}
+                                    </span>
+                                    {% if profile.user == user %}
+                                        <span class="bg-indigo-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider shadow-md">
+                                            Это вы
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <span class="text-[10px] font-bold uppercase tracking-widest">
+                                    {% if forloop.counter == 1 %}
+                                        <span class="text-amber-600">Абсолютный чемпион</span>
+                                    {% elif forloop.counter <= 3 %}
+                                        <span class="text-slate-500">Победитель</span>
+                                    {% else %}
+                                        <span class="text-slate-400">Участник</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="px-8 py-5 text-right">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl border transition-all
+                            {% if profile.user == user %}
+                                bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100
+                            {% else %}
+                                bg-white/80 border-slate-200/60 shadow-sm
+                            {% endif %}">
+                            <span class="text-lg font-black tracking-tight">{{ profile.rating }}</span>
+                            <span class="text-[10px] font-bold uppercase {% if profile.user == user %} text-indigo-200 {% else %} text-slate-400 {% endif %}">Elo</span>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="px-8 py-10 text-center text-slate-400 font-medium italic">Рейтинг пока пуст. Будьте первым!</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-8 bg-white border border-slate-200 rounded-[2rem] p-6 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                <i class="fas fa-chart-line text-xl"></i>
+            </div>
+            <p class="text-slate-600 font-medium text-sm max-w-xs">Рейтинг обновляется в реальном времени после каждой задачи или дуэли.</p>
+        </div>
+        <a href="{% url 'pvp_lobby' %}" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">
+            В лобби
+        </a>
+    </div>
+</div>
+{% endblock %}
