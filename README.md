@@ -3,7 +3,7 @@
 **Краткое описание проекта:** Интерактивный веб-сервис для учащихся школы №1518, предназначенный для подготовки к олимпиадам. Система сочетает классическое решение задач и уникальный PvP-модуль для соревнований между учениками в реальном времени.
 
 ## 🎞 Видео-демонстрация
-[Смотреть обзор проекта на Rutube](https://rutube.ru/video/private/37d853af8d17da84219491da28392dd0/?p=UKvcKUgqg03X6ZelgNSrZg)
+[Смотреть обзор проекта в ВК](https://vkvideo.ru/video-236064802_456239017?sh=4)
 
 ## 🚀 Функциональность
 
@@ -37,7 +37,7 @@
 
 1. **Клонирование репозитория:**
    ```bash
-   git clone [https://github.com/](https://github.com/)[ВАШ_РЕПОЗИТОРИЙ]
+   git clone https://github.com/LIKEDEVIL/OlimpiadPlatform.git
    cd OlimpiadPlatform-main
 2.Настройка окружения:
 	python -m venv .venv
@@ -46,5 +46,6 @@
 3.Установка зависимостей:
 	pip install -r requirements.txt
 4.Миграции и запуск:
+	python manage.py makemigrations
 	python manage.py migrate
 	python manage.py runserver
